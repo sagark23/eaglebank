@@ -31,9 +31,7 @@ public class UserService {
         }
 
         String userId = idGenerator.generateUserId();
-
-        // Generate a default password hash for now (in real system, would be set via separate endpoint)
-        String passwordHash = passwordEncoder.encode("temporary-password-" + userId);
+        String passwordHash = passwordEncoder.encode(request.password());
 
         User user = User.builder()
                 .userId(userId)

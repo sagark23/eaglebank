@@ -153,6 +153,7 @@ class UserServiceTest {
         return new CreateUserRequest(
                 "John Doe",
                 "john@example.com",
+                "SecurePass123",
                 "+447123456789",
                 new AddressRequest(
                         "123 Main St",

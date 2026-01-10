@@ -67,5 +67,38 @@ class IdGeneratorTest {
         // Then
         assertThat(idPart).matches("[a-f0-9]{12}");
     }
+
+    @Test
+    void shouldGenerateAccountNumberWithCorrectFormat() {
+        // When
+        String accountNumber = idGenerator.generateAccountNumber();
+
+        // Then
+        assertThat(accountNumber).startsWith("01");
+        assertThat(accountNumber).hasSize(8); // 01 + 6 digits
+        assertThat(accountNumber).matches("01\\d{6}");
+    }
+
+    @Test
+    void shouldGenerateUniqueAccountNumbers() {
+        // When
+        String accountNumber1 = idGenerator.generateAccountNumber();
+        String accountNumber2 = idGenerator.generateAccountNumber();
+
+        // Then
+        assertThat(accountNumber1).isNotEqualTo(accountNumber2);
+    }
+
+    @Test
+    void shouldGenerateAccountNumbersInValidRange() {
+        // When
+        String accountNumber = idGenerator.generateAccountNumber();
+        String numberPart = accountNumber.substring(2);
+        int number = Integer.parseInt(numberPart);
+
+        // Then
+        assertThat(number).isGreaterThanOrEqualTo(100000);
+        assertThat(number).isLessThan(1000000);
+    }
 }
 

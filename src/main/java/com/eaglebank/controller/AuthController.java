@@ -3,6 +3,7 @@ package com.eaglebank.controller;
 import com.eaglebank.dto.request.LoginRequest;
 import com.eaglebank.dto.response.LoginResponse;
 import com.eaglebank.service.AuthService;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -16,6 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/v1/auth")
 @RequiredArgsConstructor
 @Slf4j
+@Tag(name = "Authentication")
 public class AuthController {
 
     private final AuthService authService;

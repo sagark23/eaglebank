@@ -32,6 +32,24 @@ jwt:
   secret: ${JWT_SECRET:my-super-secret-jwt-key-at-least-256-bits-long-for-hs256-algorithm}
   expiration: 86400000  # 24 hours
 
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+    enabled: true
+  swagger-ui:
+    path: /swagger-ui.html
+    enabled: true
+    operationsSorter: method
+    tagsSorter: alpha
+    tryItOutEnabled: true
+    disable-swagger-default-url: true
+  show-actuator: false
+  default-consumes-media-type: application/json
+  default-produces-media-type: application/json
+  remove-broken-reference-definitions: false
+  override-with-generic-response: false
+  model-and-view-allowed: false
+
 logging:
   level:
     com.eaglebank: DEBUG

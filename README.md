@@ -147,6 +147,8 @@ Once running, you can access:
 | Service | URL | Credentials |
 |---------|-----|-------------|
 | 🌍 API Base URL | `http://localhost:8080` | JWT Token (after login) |
+| 📚 Swagger UI | `http://localhost:8080/swagger-ui.html` | Interactive API documentation |
+| 📄 OpenAPI Spec | `http://localhost:8080/v3/api-docs` | OpenAPI 3.0 JSON |
 | 🗄️ H2 Database Console | `http://localhost:8080/h2-console` | See below ⬇️ |
 
 **H2 Console Login:**

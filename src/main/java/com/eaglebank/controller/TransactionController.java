@@ -5,6 +5,7 @@ import com.eaglebank.dto.response.ListTransactionsResponse;
 import com.eaglebank.dto.response.TransactionResponse;
 import com.eaglebank.security.CustomUserDetails;
 import com.eaglebank.service.TransactionService;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -17,6 +18,7 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/v1/accounts/{accountNumber}/transactions")
 @RequiredArgsConstructor
 @Slf4j
+@Tag(name = "Transactions")
 public class TransactionController {
 
     private final TransactionService transactionService;

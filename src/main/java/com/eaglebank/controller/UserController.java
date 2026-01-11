@@ -6,6 +6,7 @@ import com.eaglebank.dto.response.UserResponse;
 import com.eaglebank.exception.ForbiddenException;
 import com.eaglebank.security.CustomUserDetails;
 import com.eaglebank.service.UserService;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -17,6 +18,7 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/v1/users")
 @RequiredArgsConstructor
 @Slf4j
+@Tag(name = "Users")
 public class UserController {
 
     private final UserService userService;

@@ -6,6 +6,7 @@ import com.eaglebank.dto.response.BankAccountResponse;
 import com.eaglebank.dto.response.ListBankAccountsResponse;
 import com.eaglebank.security.CustomUserDetails;
 import com.eaglebank.service.AccountService;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -17,6 +18,7 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/v1/accounts")
 @RequiredArgsConstructor
 @Slf4j
+@Tag(name = "Accounts")
 public class AccountController {
 
     private final AccountService accountService;

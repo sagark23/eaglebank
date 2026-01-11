@@ -2,6 +2,7 @@ package com.eaglebank.service;
 
 import com.eaglebank.domain.User;
 import com.eaglebank.dto.request.CreateUserRequest;
+import com.eaglebank.dto.request.UpdateUserRequest;
 import com.eaglebank.dto.response.UserResponse;
 import com.eaglebank.exception.ConflictException;
 import com.eaglebank.exception.ResourceNotFoundException;
@@ -22,6 +23,7 @@ public class UserService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final IdGenerator idGenerator;
+    private final AccountService accountService;
 
     public UserResponse createUser(CreateUserRequest request) {
         log.debug("Creating user with email: {}", request.email());
@@ -61,6 +63,45 @@ public class UserService {
         log.debug("Finding user by email: {}", email);
         return userRepository.findByEmail(email)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found with email: " + email));
+    }
+
+    public UserResponse updateUser(String userId, UpdateUserRequest request) {
+        log.debug("Updating user with userId: {}", userId);
+
+        User user = userRepository.findByUserId(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + userId));
+
+        // Update fields if provided
+        if (request.name() != null && !request.name().isBlank()) {
+            user.updateName(request.name());
+        }
+
+        if (request.phoneNumber() != null && !request.phoneNumber().isBlank()) {
+            user.updatePhoneNumber(request.phoneNumber());
+        }
+
+        if (request.address() != null) {
+            user.updateAddress(request.address().toEntity());
+        }
+
+        User updated = userRepository.save(user);
+        log.info("User updated successfully: {}", userId);
+
+        return UserResponse.from(updated);
+    }
+
+    public void deleteUser(String userId) {
+        log.debug("Deleting user with userId: {}", userId);
+
+        User user = userRepository.findByUserId(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + userId));
+
+        if (accountService.hasAccounts(userId)) {
+            throw new ConflictException("Cannot delete user with existing bank accounts. Please delete all accounts first.");
+        }
+
+        userRepository.delete(user);
+        log.info("User deleted successfully: {}", userId);
     }
 }
 

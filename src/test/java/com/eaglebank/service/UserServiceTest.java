@@ -4,6 +4,7 @@ import com.eaglebank.domain.Address;
 import com.eaglebank.domain.User;
 import com.eaglebank.dto.request.AddressRequest;
 import com.eaglebank.dto.request.CreateUserRequest;
+import com.eaglebank.dto.request.UpdateUserRequest;
 import com.eaglebank.dto.response.UserResponse;
 import com.eaglebank.exception.ConflictException;
 import com.eaglebank.exception.ResourceNotFoundException;
@@ -35,6 +36,9 @@ class UserServiceTest {
 
     @Mock
     private IdGenerator idGenerator;
+
+    @Mock
+    private AccountService accountService;
 
     @InjectMocks
     private UserService userService;
@@ -147,6 +151,136 @@ class UserServiceTest {
                 .hasMessageContaining("not found");
 
         verify(userRepository).findByEmail(email);
+    }
+
+    @Test
+    void shouldUpdateUserSuccessfully() {
+        // Given
+        String userId = "usr-abc123";
+        User user = createUser(userId);
+        UpdateUserRequest request = new UpdateUserRequest(
+                "Jane Doe",
+                "+447987654321",
+                new AddressRequest(
+                        "456 Oak Ave",
+                        null,
+                        null,
+                        "Manchester",
+                        "Greater Manchester",
+                        "M1 1AA"
+                )
+        );
+
+        when(userRepository.findByUserId(userId)).thenReturn(Optional.of(user));
+        when(userRepository.save(any(User.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        // When
+        UserResponse response = userService.updateUser(userId, request);
+
+        // Then
+        assertThat(response).isNotNull();
+        assertThat(response.name()).isEqualTo("Jane Doe");
+        assertThat(response.phoneNumber()).isEqualTo("+447987654321");
+        assertThat(response.address().line1()).isEqualTo("456 Oak Ave");
+        assertThat(response.address().town()).isEqualTo("Manchester");
+
+        verify(userRepository).findByUserId(userId);
+        verify(userRepository).save(user);
+    }
+
+    @Test
+    void shouldUpdateUserWithPartialData() {
+        // Given
+        String userId = "usr-abc123";
+        User user = createUser(userId);
+        UpdateUserRequest request = new UpdateUserRequest(
+                "Jane Doe",
+                null,
+                null
+        );
+
+        when(userRepository.findByUserId(userId)).thenReturn(Optional.of(user));
+        when(userRepository.save(any(User.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        // When
+        UserResponse response = userService.updateUser(userId, request);
+
+        // Then
+        assertThat(response).isNotNull();
+        assertThat(response.name()).isEqualTo("Jane Doe");
+        assertThat(response.phoneNumber()).isEqualTo("+447123456789"); // Original value
+        assertThat(response.address().line1()).isEqualTo("123 Main St"); // Original value
+
+        verify(userRepository).findByUserId(userId);
+        verify(userRepository).save(user);
+    }
+
+    @Test
+    void shouldThrowNotFoundExceptionWhenUpdatingNonExistentUser() {
+        // Given
+        String userId = "usr-notexists";
+        UpdateUserRequest request = new UpdateUserRequest("Jane Doe", null, null);
+        when(userRepository.findByUserId(userId)).thenReturn(Optional.empty());
+
+        // When & Then
+        assertThatThrownBy(() -> userService.updateUser(userId, request))
+                .isInstanceOf(ResourceNotFoundException.class)
+                .hasMessageContaining("not found");
+
+        verify(userRepository).findByUserId(userId);
+        verify(userRepository, never()).save(any(User.class));
+    }
+
+    @Test
+    void shouldDeleteUserSuccessfully() {
+        // Given
+        String userId = "usr-abc123";
+        User user = createUser(userId);
+
+        when(userRepository.findByUserId(userId)).thenReturn(Optional.of(user));
+        when(accountService.hasAccounts(userId)).thenReturn(false);
+
+        // When
+        userService.deleteUser(userId);
+
+        // Then
+        verify(userRepository).findByUserId(userId);
+        verify(accountService).hasAccounts(userId);
+        verify(userRepository).delete(user);
+    }
+
+    @Test
+    void shouldThrowConflictExceptionWhenDeletingUserWithAccounts() {
+        // Given
+        String userId = "usr-abc123";
+        User user = createUser(userId);
+
+        when(userRepository.findByUserId(userId)).thenReturn(Optional.of(user));
+        when(accountService.hasAccounts(userId)).thenReturn(true);
+
+        // When & Then
+        assertThatThrownBy(() -> userService.deleteUser(userId))
+                .isInstanceOf(ConflictException.class)
+                .hasMessageContaining("Cannot delete user with existing bank accounts");
+
+        verify(userRepository).findByUserId(userId);
+        verify(accountService).hasAccounts(userId);
+        verify(userRepository, never()).delete(any(User.class));
+    }
+
+    @Test
+    void shouldThrowNotFoundExceptionWhenDeletingNonExistentUser() {
+        // Given
+        String userId = "usr-notexists";
+        when(userRepository.findByUserId(userId)).thenReturn(Optional.empty());
+
+        // When & Then
+        assertThatThrownBy(() -> userService.deleteUser(userId))
+                .isInstanceOf(ResourceNotFoundException.class)
+                .hasMessageContaining("not found");
+
+        verify(userRepository).findByUserId(userId);
+        verify(userRepository, never()).delete(any(User.class));
     }
 
     private CreateUserRequest createUserRequest() {

@@ -1,6 +1,7 @@
 package com.eaglebank.controller;
 
 import com.eaglebank.dto.request.CreateUserRequest;
+import com.eaglebank.dto.request.UpdateUserRequest;
 import com.eaglebank.dto.response.UserResponse;
 import com.eaglebank.exception.ForbiddenException;
 import com.eaglebank.security.CustomUserDetails;
@@ -39,6 +40,34 @@ public class UserController {
         }
 
         return userService.getUserById(userId);
+    }
+
+    @PatchMapping("/{userId}")
+    public UserResponse updateUser(
+            @PathVariable String userId,
+            @Valid @RequestBody UpdateUserRequest request,
+            @AuthenticationPrincipal CustomUserDetails currentUser) {
+        log.info("Update user request for userId: {} by user: {}", userId, currentUser.getUserId());
+
+        if (!currentUser.getUserId().equals(userId)) {
+            throw new ForbiddenException("You are not allowed to update this user's details");
+        }
+
+        return userService.updateUser(userId, request);
+    }
+
+    @DeleteMapping("/{userId}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void deleteUser(
+            @PathVariable String userId,
+            @AuthenticationPrincipal CustomUserDetails currentUser) {
+        log.info("Delete user request for userId: {} by user: {}", userId, currentUser.getUserId());
+
+        if (!currentUser.getUserId().equals(userId)) {
+            throw new ForbiddenException("You are not allowed to delete this user's account");
+        }
+
+        userService.deleteUser(userId);
     }
 }
 

@@ -72,6 +72,12 @@ public class AccountService {
     }
 
     @Transactional(readOnly = true)
+    public boolean hasAccounts(String userId) {
+        log.debug("Checking if user has accounts: {}", userId);
+        return bankAccountRepository.countByUserUserId(userId) > 0;
+    }
+
+    @Transactional(readOnly = true)
     public BankAccountResponse getAccountByAccountNumber(String userId, String accountNumber) {
         log.debug("Fetching account: {} for user: {}", accountNumber, userId);
 

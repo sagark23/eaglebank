@@ -99,11 +99,11 @@ public class AccountService {
 
         // Update fields if provided
         if (request.name() != null && !request.name().isBlank()) {
-            account.setName(request.name());
+            account.updateName(request.name());
         }
 
         if (request.accountType() != null && !request.accountType().isBlank()) {
-            account.setAccountType(BankAccount.AccountType.valueOf(request.accountType().toUpperCase()));
+            account.updateAccountType(BankAccount.AccountType.valueOf(request.accountType().toUpperCase()));
         }
 
         BankAccount updated = bankAccountRepository.save(account);

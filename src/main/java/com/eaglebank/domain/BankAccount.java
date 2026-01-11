@@ -1,5 +1,6 @@
 package com.eaglebank.domain;
 
+import com.eaglebank.exception.InsufficientFundsException;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -62,6 +63,39 @@ public class BankAccount {
 
     public enum AccountType {
         PERSONAL
+    }
+
+    public void deposit(BigDecimal amount) {
+        if (amount == null || amount.compareTo(BigDecimal.ZERO) <= 0) {
+            throw new IllegalArgumentException("Deposit amount must be positive");
+        }
+        this.balance = this.balance.add(amount);
+    }
+
+    public void withdraw(BigDecimal amount) {
+        if (amount == null || amount.compareTo(BigDecimal.ZERO) <= 0) {
+            throw new IllegalArgumentException("Withdrawal amount must be positive");
+        }
+        if (this.balance.compareTo(amount) < 0) {
+            throw new InsufficientFundsException(
+                "Insufficient funds. Available balance: " + this.balance + ", requested: " + amount
+            );
+        }
+        this.balance = this.balance.subtract(amount);
+    }
+
+    public void updateName(String newName) {
+        if (newName == null || newName.isBlank()) {
+            throw new IllegalArgumentException("Account name cannot be blank");
+        }
+        this.name = newName;
+    }
+
+    public void updateAccountType(AccountType newAccountType) {
+        if (newAccountType == null) {
+            throw new IllegalArgumentException("Account type cannot be null");
+        }
+        this.accountType = newAccountType;
     }
 }
 

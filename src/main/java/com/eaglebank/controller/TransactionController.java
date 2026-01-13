@@ -11,6 +11,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
@@ -24,6 +25,7 @@ public class TransactionController {
     private final TransactionService transactionService;
 
     @PostMapping
+    @PreAuthorize("@securityService.ownsAccount(#accountNumber)")
     public ResponseEntity<TransactionResponse> createTransaction(
             @PathVariable String accountNumber,
             @Valid @RequestBody CreateTransactionRequest request,
@@ -35,6 +37,7 @@ public class TransactionController {
     }
 
     @GetMapping
+    @PreAuthorize("@securityService.ownsAccount(#accountNumber)")
     public ResponseEntity<ListTransactionsResponse> listTransactions(
             @PathVariable String accountNumber,
             @AuthenticationPrincipal CustomUserDetails currentUser) {
@@ -45,6 +48,7 @@ public class TransactionController {
     }
 
     @GetMapping("/{transactionId}")
+    @PreAuthorize("@securityService.ownsAccount(#accountNumber)")
     public ResponseEntity<TransactionResponse> getTransaction(
             @PathVariable String accountNumber,
             @PathVariable String transactionId,

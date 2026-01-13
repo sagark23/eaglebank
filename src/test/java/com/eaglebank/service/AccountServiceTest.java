@@ -163,25 +163,6 @@ class AccountServiceTest {
     }
 
     @Test
-    void shouldThrowForbiddenExceptionWhenAccessingAnotherUsersAccount() {
-        // Given
-        String userId = "usr-abc123";
-        String accountNumber = "01234567";
-        User anotherUser = createUser("usr-xyz789");
-        BankAccount account = createBankAccount(accountNumber, "Someone Else's Account", anotherUser);
-
-        when(bankAccountRepository.findByAccountNumber(accountNumber))
-                .thenReturn(Optional.of(account));
-
-        // When & Then
-        assertThatThrownBy(() -> accountService.getAccountByAccountNumber(userId, accountNumber))
-                .isInstanceOf(ForbiddenException.class)
-                .hasMessageContaining("not allowed to access");
-
-        verify(bankAccountRepository).findByAccountNumber(accountNumber);
-    }
-
-    @Test
     void shouldUpdateAccountSuccessfully() {
         // Given
         String userId = "usr-abc123";
@@ -207,27 +188,6 @@ class AccountServiceTest {
     }
 
     @Test
-    void shouldThrowForbiddenExceptionWhenUpdatingAnotherUsersAccount() {
-        // Given
-        String userId = "usr-abc123";
-        String accountNumber = "01234567";
-        UpdateBankAccountRequest request = new UpdateBankAccountRequest("Updated Name", "personal");
-        User anotherUser = createUser("usr-xyz789");
-        BankAccount account = createBankAccount(accountNumber, "Someone Else's Account", anotherUser);
-
-        when(bankAccountRepository.findByAccountNumber(accountNumber))
-                .thenReturn(Optional.of(account));
-
-        // When & Then
-        assertThatThrownBy(() -> accountService.updateAccount(userId, accountNumber, request))
-                .isInstanceOf(ForbiddenException.class)
-                .hasMessageContaining("not allowed to update");
-
-        verify(bankAccountRepository).findByAccountNumber(accountNumber);
-        verify(bankAccountRepository, never()).save(any(BankAccount.class));
-    }
-
-    @Test
     void shouldDeleteAccountSuccessfully() {
         // Given
         String userId = "usr-abc123";
@@ -244,26 +204,6 @@ class AccountServiceTest {
         // Then
         verify(bankAccountRepository).findByAccountNumber(accountNumber);
         verify(bankAccountRepository).delete(account);
-    }
-
-    @Test
-    void shouldThrowForbiddenExceptionWhenDeletingAnotherUsersAccount() {
-        // Given
-        String userId = "usr-abc123";
-        String accountNumber = "01234567";
-        User anotherUser = createUser("usr-xyz789");
-        BankAccount account = createBankAccount(accountNumber, "Someone Else's Account", anotherUser);
-
-        when(bankAccountRepository.findByAccountNumber(accountNumber))
-                .thenReturn(Optional.of(account));
-
-        // When & Then
-        assertThatThrownBy(() -> accountService.deleteAccount(userId, accountNumber))
-                .isInstanceOf(ForbiddenException.class)
-                .hasMessageContaining("not allowed to delete");
-
-        verify(bankAccountRepository).findByAccountNumber(accountNumber);
-        verify(bankAccountRepository, never()).delete(any(BankAccount.class));
     }
 
     private User createUser(String userId) {

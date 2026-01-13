@@ -7,7 +7,6 @@ import com.eaglebank.dto.request.UpdateBankAccountRequest;
 import com.eaglebank.dto.response.BankAccountResponse;
 import com.eaglebank.dto.response.ListBankAccountsResponse;
 import com.eaglebank.exception.ConflictException;
-import com.eaglebank.exception.ForbiddenException;
 import com.eaglebank.exception.ResourceNotFoundException;
 import com.eaglebank.repository.BankAccountRepository;
 import com.eaglebank.repository.UserRepository;
@@ -84,10 +83,6 @@ public class AccountService {
         BankAccount account = bankAccountRepository.findByAccountNumber(accountNumber)
                 .orElseThrow(() -> new ResourceNotFoundException("Bank account not found with account number: " + accountNumber));
 
-        // Authorization check
-        if (!account.getUser().getUserId().equals(userId)) {
-            throw new ForbiddenException("You are not allowed to access this bank account");
-        }
 
         return BankAccountResponse.from(account);
     }
@@ -97,11 +92,6 @@ public class AccountService {
 
         BankAccount account = bankAccountRepository.findByAccountNumber(accountNumber)
                 .orElseThrow(() -> new ResourceNotFoundException("Bank account not found with account number: " + accountNumber));
-
-        // Authorization check
-        if (!account.getUser().getUserId().equals(userId)) {
-            throw new ForbiddenException("You are not allowed to update this bank account");
-        }
 
         // Update fields if provided
         if (request.name() != null && !request.name().isBlank()) {
@@ -124,10 +114,6 @@ public class AccountService {
         BankAccount account = bankAccountRepository.findByAccountNumber(accountNumber)
                 .orElseThrow(() -> new ResourceNotFoundException("Bank account not found with account number: " + accountNumber));
 
-        // Authorization check
-        if (!account.getUser().getUserId().equals(userId)) {
-            throw new ForbiddenException("You are not allowed to delete this bank account");
-        }
 
         bankAccountRepository.delete(account);
         log.info("Bank account deleted successfully: {}", accountNumber);

@@ -11,6 +11,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
@@ -40,6 +41,7 @@ public class AccountController {
     }
 
     @GetMapping("/{accountNumber}")
+    @PreAuthorize("@securityService.ownsAccount(#accountNumber)")
     public BankAccountResponse getAccountByAccountNumber(
             @PathVariable String accountNumber,
             @AuthenticationPrincipal CustomUserDetails currentUser) {
@@ -48,6 +50,7 @@ public class AccountController {
     }
 
     @PatchMapping("/{accountNumber}")
+    @PreAuthorize("@securityService.ownsAccount(#accountNumber)")
     public BankAccountResponse updateAccount(
             @PathVariable String accountNumber,
             @Valid @RequestBody UpdateBankAccountRequest request,
@@ -58,6 +61,7 @@ public class AccountController {
 
     @DeleteMapping("/{accountNumber}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
+    @PreAuthorize("@securityService.ownsAccount(#accountNumber)")
     public void deleteAccount(
             @PathVariable String accountNumber,
             @AuthenticationPrincipal CustomUserDetails currentUser) {

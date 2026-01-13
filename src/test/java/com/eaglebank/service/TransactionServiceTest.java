@@ -193,33 +193,6 @@ class TransactionServiceTest {
     }
 
     @Test
-    void shouldThrowForbiddenExceptionWhenUserDoesNotOwnAccount() {
-        // Given
-        String accountNumber = "01234567";
-        String userId = "usr-abc123";
-        String otherUserId = "usr-xyz789";
-
-        CreateTransactionRequest request = CreateTransactionRequest.builder()
-                .amount(new BigDecimal("50.00"))
-                .currency("GBP")
-                .type("deposit")
-                .build();
-
-        User otherUser = createUser(otherUserId);
-        BankAccount account = createAccount(accountNumber, otherUser, new BigDecimal("100.00"));
-
-        when(bankAccountRepository.findByAccountNumber(accountNumber)).thenReturn(Optional.of(account));
-
-        // When & Then
-        assertThatThrownBy(() -> transactionService.createTransaction(accountNumber, request, userId))
-                .isInstanceOf(ForbiddenException.class)
-                .hasMessageContaining("not authorized");
-
-        verify(bankAccountRepository).findByAccountNumber(accountNumber);
-        verify(transactionRepository, never()).save(any(Transaction.class));
-    }
-
-    @Test
     void shouldListTransactionsSuccessfully() {
         // Given
         String accountNumber = "01234567";
@@ -248,27 +221,6 @@ class TransactionServiceTest {
 
         verify(bankAccountRepository).findByAccountNumber(accountNumber);
         verify(transactionRepository).findByAccount_AccountNumberOrderByCreatedAtDesc(accountNumber);
-    }
-
-    @Test
-    void shouldThrowForbiddenExceptionWhenListingTransactionsForOtherUserAccount() {
-        // Given
-        String accountNumber = "01234567";
-        String userId = "usr-abc123";
-        String otherUserId = "usr-xyz789";
-
-        User otherUser = createUser(otherUserId);
-        BankAccount account = createAccount(accountNumber, otherUser, new BigDecimal("100.00"));
-
-        when(bankAccountRepository.findByAccountNumber(accountNumber)).thenReturn(Optional.of(account));
-
-        // When & Then
-        assertThatThrownBy(() -> transactionService.listTransactions(accountNumber, userId))
-                .isInstanceOf(ForbiddenException.class)
-                .hasMessageContaining("not authorized");
-
-        verify(bankAccountRepository).findByAccountNumber(accountNumber);
-        verify(transactionRepository, never()).findByAccount_AccountNumberOrderByCreatedAtDesc(anyString());
     }
 
     @Test

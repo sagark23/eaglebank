@@ -2,16 +2,12 @@ package com.eaglebank.service;
 
 import com.eaglebank.domain.BankAccount;
 import com.eaglebank.domain.Transaction;
-import com.eaglebank.domain.User;
 import com.eaglebank.dto.request.CreateTransactionRequest;
 import com.eaglebank.dto.response.ListTransactionsResponse;
 import com.eaglebank.dto.response.TransactionResponse;
-import com.eaglebank.exception.ForbiddenException;
 import com.eaglebank.exception.ResourceNotFoundException;
-import com.eaglebank.exception.UnprocessableEntityException;
 import com.eaglebank.repository.BankAccountRepository;
 import com.eaglebank.repository.TransactionRepository;
-import com.eaglebank.repository.UserRepository;
 import com.eaglebank.util.IdGenerator;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -30,7 +26,6 @@ public class TransactionService {
 
     private final TransactionRepository transactionRepository;
     private final BankAccountRepository bankAccountRepository;
-    private final UserRepository userRepository;
     private final IdGenerator idGenerator;
 
     public TransactionResponse createTransaction(String accountNumber,
@@ -38,13 +33,10 @@ public class TransactionService {
                                                   String userId) {
         log.debug("Creating transaction for account: {}, user: {}", accountNumber, userId);
 
-        // Find and validate account ownership
-        BankAccount account = findAndValidateAccountOwnership(accountNumber, userId);
+        BankAccount account = findAccountByNumber(accountNumber);
 
-        // Validate transaction based on type
         Transaction.TransactionType type = parseTransactionType(request.type());
 
-        // Create transaction
         Transaction transaction = Transaction.builder()
                 .transactionId(idGenerator.generateTransactionId())
                 .amount(request.amount())
@@ -69,8 +61,8 @@ public class TransactionService {
     public ListTransactionsResponse listTransactions(String accountNumber, String userId) {
         log.debug("Listing transactions for account: {}, user: {}", accountNumber, userId);
 
-        // Validate account ownership
-        findAndValidateAccountOwnership(accountNumber, userId);
+        // Validate account exists (authorization already checked at controller level)
+        findAccountByNumber(accountNumber);
 
         List<Transaction> transactions = transactionRepository
                 .findByAccount_AccountNumberOrderByCreatedAtDesc(accountNumber);
@@ -88,8 +80,7 @@ public class TransactionService {
     public TransactionResponse getTransaction(String accountNumber, String transactionId, String userId) {
         log.debug("Getting transaction: {} for account: {}, user: {}", transactionId, accountNumber, userId);
 
-        // Validate account ownership
-        findAndValidateAccountOwnership(accountNumber, userId);
+        findAccountByNumber(accountNumber);
 
         // Find transaction by transactionId and accountNumber
         Transaction transaction = transactionRepository
@@ -100,15 +91,9 @@ public class TransactionService {
         return TransactionResponse.from(transaction);
     }
 
-    private BankAccount findAndValidateAccountOwnership(String accountNumber, String userId) {
-        BankAccount account = bankAccountRepository.findByAccountNumber(accountNumber)
+    private BankAccount findAccountByNumber(String accountNumber) {
+        return bankAccountRepository.findByAccountNumber(accountNumber)
                 .orElseThrow(() -> new ResourceNotFoundException("Account not found with number: " + accountNumber));
-
-        if (!account.getUser().getUserId().equals(userId)) {
-            throw new ForbiddenException("You are not authorized to access this account");
-        }
-
-        return account;
     }
 
     private Transaction.TransactionType parseTransactionType(String type) {
